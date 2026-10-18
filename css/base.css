@@ -1,0 +1,39 @@
+:root {
+  --teal-dark: #0f5c4e;
+  --teal-hover: #0b463b;
+  --teal-light: #e6f2ef;
+  --teal-surface: #e7f1ee;
+  --bg-page: #fafafa;
+  --bg-white: #ffffff;
+  --text-main: #181d1c;
+  --text-muted: #66706d;
+  --border-light: #eaecf0;
+  --peach-avatar: #f6e3ce;
+  --peach-text: #5a4632;
+  --high-bg: #fbe6da;
+  --high-text: #bd5225;
+  --med-bg: #f4eee4;
+  --med-text: #595246;
+  --low-bg: #f2f1ec;
+  --low-text: #5d5c56;
+  --error-color: #dc3912;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg-page); color: var(--text-main); -webkit-font-smoothing: antialiased; }
+.view-section { display: none; }
+.view-section.active { display: block; }
+.subtitle { font-size: 14px; color: var(--text-muted); }
+.teal { color: var(--teal-dark); }
+.orange, .orange-text { color: var(--high-text); }
+
+.btn-primary { width: 100%; background: var(--teal-dark); color: #fff; border: none; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-primary-inline { background: var(--teal-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-primary-inline:hover, .btn-primary:hover { background: var(--teal-hover); }
+.btn-outline, .btn-white { background: #fff; border: 1px solid var(--border-light); padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 500; cursor: pointer; color: var(--text-main); }
+.btn-soft-teal { background: var(--teal-light); color: var(--teal-dark); border: none; padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.link-btn { background: none; border: none; color: var(--teal-dark); font-weight: 600; font-size: 13px; cursor: pointer; padding: 0; }
+.priority-badge { align-self: flex-start; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.priority-badge.high { background: var(--high-bg); color: var(--high-text); }
+.priority-badge.medium { background: var(--med-bg); color: var(--med-text); }
+.priority-badge.low { background: var(--low-bg); color: var(--low-text); }

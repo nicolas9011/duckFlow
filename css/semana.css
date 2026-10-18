@@ -1,0 +1,20 @@
+.stepper-5s { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 14px; }
+.step { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-weight: 500; }
+.step span { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center; background: #fff; }
+.step.active { color: var(--teal-dark); font-weight: 600; }
+.step.active span { background: var(--teal-dark); color: #fff; }
+.step-line { width: 70px; height: 1px; background: var(--border-light); }
+.semana-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 20px; }
+.semana-col { display: flex; flex-direction: column; gap: 18px; }
+.sem-card { background: #fff; border: 1px solid var(--border-light); border-radius: 16px; padding: 20px; }
+.sem-card.cream { background: #fbf6ee; }
+.sem-card.teal-box { background: var(--teal-light); }
+.sem-card-head { display: flex; justify-content: space-between; align-items: start; margin-bottom: 14px; }
+.sem-list { display: flex; flex-direction: column; gap: 10px; }
+.sem-item { background: #f9f7f2; padding: 12px 14px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.sem-item small { display: block; color: var(--text-muted); font-size: 12px; }
+.sem-actions-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.dup-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.no-date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13.5px; }
+.no-date-grid small { display: block; color: var(--text-muted); }
+.ready-list { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; margin-top: 10px; }

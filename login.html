@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Duck Flow</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- SDK de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="brand-header">
+        <div class="brand-logo">D</div>
+        <h2>Duck Flow</h2>
+        <p>Tu ritmo académico</p>
+      </div>
+
+      <form id="auth-form">
+        <!-- Estos campos solo se muestran en modo registro -->
+        <div id="register-fields" style="display: none;">
+          <div class="input-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="Ej: Juan">
+          </div>
+          <div class="input-group">
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" placeholder="Ej: Parra">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" required placeholder="tu@correo.com">
+        </div>
+
+        <div class="input-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+
+        <div id="auth-error" class="error-msg"></div>
+
+        <button type="submit" id="btn-submit" class="btn-primary">Iniciar sesión</button>
+      </form>
+
+      <div class="auth-toggle">
+        <span id="toggle-text">¿No tienes cuenta?</span>
+        <button type="button" id="btn-toggle-mode" class="btn-link">Regístrate</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

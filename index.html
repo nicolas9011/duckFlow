@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duck Flow - Tu ritmo académico</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Estilos Modulares por Interfaz -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/shell.css">
+  <link rel="stylesheet" href="css/inicio.css">
+  <link rel="stylesheet" href="css/tareas.css">
+  <link rel="stylesheet" href="css/calendario.css">
+  <link rel="stylesheet" href="css/rutinas.css">
+  <link rel="stylesheet" href="css/progreso.css">
+  <link rel="stylesheet" href="css/semana.css">
+  <link rel="stylesheet" href="css/modales.css">
+  <!-- SDK de Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="app-layout">
+    
+    <!-- BARRA LATERAL IZQUIERDA -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-logo">D</div>
+          <div class="brand-text">
+            <h1>Duck Flow</h1>
+            <p>Tu ritmo académico</p>
+          </div>
+        </div>
+
+        <nav class="nav-menu">
+          <a href="#inicio" class="nav-item" data-view="inicio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5L12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-9z"/><path d="M9 21V13.5h6V21"/></svg>
+            <span>Inicio</span>
+          </a>
+          <a href="#mis-tareas" class="nav-item active" data-view="mis-tareas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 10l2 2 4-4M8 16h8"/></svg>
+            <span>Mis tareas</span>
+          </a>
+          <a href="#calendario" class="nav-item" data-view="calendario">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18"/><circle cx="12" cy="15" r="1.5"/></svg>
+            <span>Calendario</span>
+          </a>
+          <a href="#rutinas" class="nav-item" data-view="rutinas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="7" r="1.5"/><path d="M10 7h10"/><circle cx="5" cy="12" r="1.5"/><path d="M10 12h10"/><circle cx="5" cy="17" r="1.5"/><path d="M10 17h10"/></svg>
+            <span>Rutinas</span>
+          </a>
+          <a href="#progreso" class="nav-item" data-view="progreso">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 20V11M12 20V4M18 20v-6"/></svg>
+            <span>Progreso</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="#semana" class="config-link" data-view="semana" title="Cierra tu semana (5S)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.77 1.02 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Configuración</span>
+        </a>
+        <div class="user-profile" id="btn-logout" title="Clic para cerrar sesión">
+          <div class="avatar-jf" id="sidebar-avatar">JF</div>
+          <div class="user-info">
+            <strong id="sidebar-name">Juan</strong>
+            <span id="sidebar-role">Ingeniería</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+      <header class="top-header">
+        <div class="greeting">
+          <h2 id="header-greeting">Hola, Juan</h2>
+          <p>Miércoles, 7 de octubre</p>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" id="btn-open-semana" title="Revisión semanal (Cierra tu semana)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <div class="avatar-jf" id="header-avatar">JF</div>
+        </div>
+      </header>
+
+      <!-- =================================================================
+           01. INTERFAZ: INICIO (inicio.png)
+      ================================================================== -->
+      <section id="view-inicio" class="view-section">
+        <div class="section-header">
+          <div>
+            <h3>Inicio</h3>
+            <p class="subtitle">Organiza tu día y avanza paso a paso.</p>
+          </div>
+        </div>
+        <div class="inicio-grid">
+          <div class="inicio-card">
+            <h4>Resumen del día</h4>
+            <p id="inicio-resumen-dia">3 pendientes · 1 entrega cercana · 2 h estimadas para hoy</p>
+          </div>
+          <div class="inicio-card">
+            <h4>Próximas actividades</h4>
+            <p>Bases de Datos · entrega mañana</p>
+            <p>Cálculo · parcial el viernes</p>
+          </div>
+          <div class="inicio-card">
+            <h4>Tarea principal</h4>
+            <p class="inicio-muted" id="inicio-tarea-materia">Arquitectura de Software</p>
+            <p id="inicio-tarea-desc">Avanzar la documentación del proyecto antes de cerrar el día.</p>
+          </div>
+          <div class="inicio-card">
+            <h4>Progreso semanal</h4>
+            <p>4 de 6 actividades completadas · ritmo estable</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           02. INTERFAZ: MIS TAREAS (mis tareas.png)
+      ================================================================== -->
+      <section id="view-mis-tareas" class="view-section active">
+        <div class="section-header">
+          <div>
+            <h3>Mis tareas</h3>
+            <p class="subtitle">Organiza tu trabajo y enfócate en una cosa a la vez.</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-outline" id="btn-ir-cierre-semanal">Revisión semanal</button>
+            <button class="btn-primary-inline" id="btn-nueva-tarea">+ Nueva tarea</button>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="todas">Todas</button>
+            <button class="filter-tab" data-filter="hoy">Hoy</button>
+            <button class="filter-tab" data-filter="semana">Esta semana</button>
+            <button class="filter-tab" data-filter="proximas">Próximas</button>
+          </div>
+          <div class="filter-inputs">
+            <div class="select-wrapper">
+              <select id="subject-filter">
+                <option value="todas">Todas las materias</option>
+                <option value="Teoría de Señales">Teoría de Señales</option>
+                <option value="Redes II">Redes II</option>
+                <option value="Base de Datos 2">Base de Datos 2</option>
+                <option value="Práctica Investigativa">Práctica Investigativa</option>
+                <option value="Fundamentos de Linux">Fundamentos de Linux</option>
+              </select>
+            </div>
+            <div class="search-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input type="text" id="task-search" placeholder="Buscar tarea...">
+            </div>
+          </div>
+        </div>
+
+        <div class="status-summary">
+          <span id="kanban-summary-text">8 tareas · 1 en curso · 2 próximas</span>
+          <span>Pendiente → En curso → Revisar → Hecho</span>
+        </div>
+
+        <div class="kanban-board">
+          <div class="kanban-col">
+            <div class="col-header"><h4>Pendiente</h4><span class="col-count" id="count-pendiente">3</span></div>
+            <div class="col-cards" id="col-pendiente"></div>
+          </div>
+
+          <div class="kanban-col focus-col">
+            <div class="col-header focus-header">
+              <div><h4>En curso</h4><p class="focus-subtitle">Tu enfoque actual</p></div>
+              <span class="col-count" id="count-encurso">1</span>
+            </div>
+            <div class="col-cards" id="col-encurso"></div>
+          </div>
+
+          <div class="kanban-col">
+            <div class="col-header"><h4>Revisar</h4><span class="col-count" id="count-revisar">2</span></div>
+            <div class="col-cards" id="col-revisar"></div>
+          </div>
+
+          <div class="kanban-col">
+            <div class="col-header"><h4>Hecho</h4><span class="col-count" id="count-hecho">2</span></div>
+            <div class="col-cards" id="col-hecho"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           04. INTERFAZ: CALENDARIO (calendario.png)
+      ================================================================== -->
+      <section id="view-calendario" class="view-section">
+        <div class="section-header">
+          <div>
+            <h3>Calendario</h3>
+            <p class="subtitle">Visualiza tus entregas, parciales y actividades académicas.</p>
+          </div>
+          <button class="btn-primary-inline" id="btn-nueva-actividad-cal">+ Nueva actividad</button>
+        </div>
+
+        <div class="filter-tabs" style="margin-bottom: 14px;">
+          <button class="filter-tab">Hoy</button>
+          <button class="filter-tab">Esta semana</button>
+          <button class="filter-tab active">Mes</button>
+        </div>
+
+        <div class="cal-controls-bar">
+          <div class="cal-month-nav">
+            <button class="cal-nav-btn">&lt;</button>
+            <h4>Octubre 2026</h4>
+            <button class="cal-nav-btn">&gt;</button>
+            <button class="cal-today-btn">Hoy</button>
+          </div>
+          <div class="filter-inputs">
+            <div class="select-wrapper">
+              <select id="cal-subject-filter">
+                <option value="todas">Todas las materias</option>
+                <option value="Teoría de Señales">Teoría de Señales</option>
+                <option value="Redes II">Redes II</option>
+                <option value="Base de Datos 2">Base de Datos 2</option>
+                <option value="Inglés">Inglés</option>
+              </select>
+            </div>
+            <div class="select-wrapper">
+              <select id="cal-type-filter">
+                <option value="todas">Todas las actividades</option>
+                <option value="Parcial">Parciales</option>
+                <option value="Taller">Talleres</option>
+                <option value="Entrega">Entregas</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <p class="cal-sub-count">12 actividades este mes · 3 próximas · 1 urgente</p>
+
+        <div class="calendario-layout">
+          <div class="cal-grid-box" id="calendar-grid-container"></div>
+          <aside class="cal-upcoming-panel">
+            <h4>Próximamente</h4>
+            <p class="subtitle" style="margin-bottom:14px;">Lo más cercano de tu semana</p>
+            <div class="upcoming-card urgent">
+              <div class="up-top"><span class="up-day orange">Hoy</span><span>6:00 PM</span></div>
+              <h5>Taller de Señales</h5>
+              <p class="up-rem">🔔 Recordatorio 1 h antes</p>
+            </div>
+            <div class="upcoming-card">
+              <div class="up-top"><span class="up-day teal">Mañana</span><span>10:00 AM</span></div>
+              <h5>Quiz Inglés</h5>
+              <p class="up-rem">🔔 Recordatorio 1 h antes</p>
+            </div>
+            <div class="upcoming-card urgent">
+              <div class="up-top"><span class="up-day orange">Viernes</span><span>8:00 AM</span></div>
+              <h5>Parcial Redes II</h5>
+            </div>
+            <div class="upcoming-card">
+              <div class="up-top"><span class="up-day teal">12 Oct</span><span>11:59 PM</span></div>
+              <h5>Entrega Base de Datos</h5>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           05. INTERFAZ: RUTINAS (rutinas.png)
+      ================================================================== -->
+      <section id="view-rutinas" class="view-section">
+        <div class="section-header">
+          <div>
+            <h3>Rutinas</h3>
+            <p class="subtitle">Guarda formas de estudio que puedas repetir cuando las necesites.</p>
+          </div>
+          <button class="btn-primary-inline" id="btn-nueva-rutina">+ Nueva rutina</button>
+        </div>
+
+        <div class="filters-bar">
+          <span class="status-summary" style="margin:0;">4 rutinas guardadas · 2 usadas esta semana</span>
+          <div class="filter-inputs">
+            <div class="select-wrapper">
+              <select id="rutina-subject-filter">
+                <option value="todas">Todas las materias</option>
+                <option value="General">General</option>
+                <option value="Sistemas">Sistemas</option>
+                <option value="Teoría de Señales">Teoría de Señales</option>
+                <option value="Redes II">Redes II</option>
+              </select>
+            </div>
+            <div class="search-wrapper">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <input type="text" id="rutina-search" placeholder="Buscar rutina...">
+            </div>
+          </div>
+        </div>
+
+        <div class="rutinas-grid" id="rutinas-container"></div>
+
+        <div class="create-routine-banner" id="banner-crear-rutina">
+          <div class="plus-circle">+</div>
+          <div>
+            <strong>+ Crear una rutina</strong>
+            <p>Guarda una forma de estudio que puedas reutilizar.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           06. INTERFAZ: PROGRESO Y ESTADÍSTICAS (progreso.png)
+      ================================================================== -->
+      <section id="view-progreso" class="view-section">
+        <div class="section-header">
+          <div>
+            <h3>Progreso</h3>
+            <p class="subtitle">Mira cómo estás avanzando y qué puedes ajustar.</p>
+          </div>
+          <div class="select-wrapper">
+            <select><option>Últimas 4 semanas</option><option>Este semestre</option></select>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-top"><span>Cumplimiento</span><span class="trend-icon">↗</span></div>
+            <div class="kpi-val">84%</div>
+            <p class="kpi-sub teal">+8% vs. periodo anterior</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><span>Tiempo estimado</span></div>
+            <div class="kpi-val">6 h 30 min</div>
+            <p class="kpi-sub orange">Tiempo real: 7 h 10 min · +40 min</p>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-top"><span>Tiempo para completar</span></div>
+            <div class="kpi-val">1.8 días</div>
+            <p class="kpi-sub muted">Promedio por tarea</p>
+          </div>
+        </div>
+
+        <div class="progreso-mid-grid">
+          <div class="prog-card">
+            <h4>Cumplimiento semanal</h4>
+            <p class="subtitle">Tareas completadas a tiempo</p>
+            <div class="weekly-bars">
+              <div class="w-bar-col"><div class="w-pill"><div class="w-fill" style="height:68%"><span>68%</span></div></div><small>Semana 1</small></div>
+              <div class="w-bar-col"><div class="w-pill"><div class="w-fill" style="height:74%"><span>74%</span></div></div><small>Semana 2</small></div>
+              <div class="w-bar-col"><div class="w-pill"><div class="w-fill" style="height:79%"><span>79%</span></div></div><small>Semana 3</small></div>
+              <div class="w-bar-col"><div class="w-pill"><div class="w-fill dark" style="height:84%"><span>84%</span></div></div><small>Semana 4</small></div>
+            </div>
+          </div>
+
+          <div class="prog-card">
+            <h4>Tiempo planificado vs. real</h4>
+            <p class="subtitle">Qué tan cerca estuvo tu estimación</p>
+            <div class="legend-inline">
+              <span><i class="dot teal"></i> Planificado</span>
+              <span><i class="dot gray"></i> Real</span>
+            </div>
+            <div class="compare-list">
+              <div class="cmp-row">
+                <strong>Redes II</strong>
+                <div class="cmp-bars">
+                  <div class="bar-plan" style="width:70%"></div>
+                  <div class="bar-real orange" style="width:88%"></div>
+                </div>
+                <div class="cmp-times"><span>2 h</span><span class="orange">2 h 30 min</span></div>
+              </div>
+              <div class="cmp-row">
+                <strong>Teoría de Señales</strong>
+                <div class="cmp-bars">
+                  <div class="bar-plan" style="width:55%"></div>
+                  <div class="bar-real" style="width:50%"></div>
+                </div>
+                <div class="cmp-times"><span>1 h 30 min</span><span>1 h 20 min</span></div>
+              </div>
+              <div class="cmp-row">
+                <strong>Base de Datos</strong>
+                <div class="cmp-bars">
+                  <div class="bar-plan" style="width:70%"></div>
+                  <div class="bar-real" style="width:78%"></div>
+                </div>
+                <div class="cmp-times"><span>2 h</span><span>2 h 15 min</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progreso-bot-grid">
+          <div class="prog-card">
+            <h4>Cómo vas por materia</h4>
+            <p class="subtitle">Una vista rápida de dónde necesitas más atención</p>
+            <div class="subject-progress-list">
+              <div class="subj-item">
+                <div class="subj-head"><strong>Redes II</strong><div><b class="teal">78%</b> <small class="orange">2 pendientes</small></div></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:78%"></div></div>
+              </div>
+              <div class="subj-item">
+                <div class="subj-head"><strong>Teoría de Señales</strong><div><b class="teal">88%</b> <small>1 pendiente</small></div></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:88%"></div></div>
+              </div>
+              <div class="subj-item">
+                <div class="subj-head"><strong>Base de Datos</strong><div><b class="teal">82%</b> <small>2 pendientes</small></div></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:82%"></div></div>
+              </div>
+              <div class="subj-item">
+                <div class="subj-head"><strong>Inglés</strong><div><b class="teal">92%</b> <small>0 pendientes</small></div></div>
+                <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:92%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insights-col">
+            <div class="insight-card warn">
+              <div class="ins-title"><span class="ins-icon">↗</span> <strong>Algo que puedes mejorar</strong></div>
+              <p>Las tareas de Redes II están tomando más tiempo del que planeas.</p>
+              <p class="orange-text">En promedio necesitas 25 min adicionales.</p>
+              <button class="link-btn" id="btn-abrir-causa-a3">Ver tareas →</button>
+            </div>
+            <div class="insight-card success">
+              <div class="ins-title"><span class="ins-icon">✓</span> <strong>Buen progreso</strong></div>
+              <p>Completaste 6 tareas a tiempo esta semana.</p>
+              <small>Vas cerrando tus pendientes con más constancia.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="share-report-bar">
+          <div>
+            <h4>Compartir reporte</h4>
+            <p class="subtitle">Elige cómo quieres enviarlo.</p>
+          </div>
+          <div class="share-btns">
+            <button class="btn-outline" id="btn-descargar-pdf">⬇ Descargar PDF</button>
+            <button class="btn-primary-inline" id="btn-compartir-rep">🔗 Compartir reporte</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================
+           09. INTERFAZ: CIERRA TU SEMANA / 5S (cierratusemana.png)
+      ================================================================== -->
+      <section id="view-semana" class="view-section">
+        <div class="section-header">
+          <div>
+            <h3>Cierra tu semana</h3>
+            <p class="subtitle">Ordena lo que terminaste y deja lista la próxima semana.</p>
+          </div>
+          <span class="subtitle">Revisión semanal</span>
+        </div>
+
+        <div class="stepper-5s">
+          <div class="step active"><span>1</span> Archivar</div>
+          <div class="step-line"></div>
+          <div class="step"><span>2</span> Ordenar</div>
+          <div class="step-line"></div>
+          <div class="step"><span>3</span> Preparar</div>
+        </div>
+
+        <div class="semana-grid">
+          <div class="semana-col">
+            <div class="sem-card">
+              <div class="sem-card-head">
+                <div>
+                  <h4>Lo que ya terminaste</h4>
+                  <p class="subtitle">Puedes archivar estas tareas para mantener tu espacio limpio.</p>
+                </div>
+                <strong class="teal" id="count-seleccionadas-5s">4 seleccionadas</strong>
+              </div>
+              <div class="sem-list" id="lista-terminadas-5s">
+                <label class="sem-item"><input type="checkbox" checked> <div><strong>Taller de Señales</strong><small>Teoría de Señales</small></div><span>Mar · 6 Oct</span></label>
+                <label class="sem-item"><input type="checkbox" checked> <div><strong>Laboratorio Linux</strong><small>Fundamentos de Linux</small></div><span>Lun · 5 Oct</span></label>
+                <label class="sem-item"><input type="checkbox" checked> <div><strong>Quiz Inglés</strong><small>Inglés</small></div><span>Vie · 2 Oct</span></label>
+                <label class="sem-item"><input type="checkbox" checked> <div><strong>Avance proyecto</strong><small>Práctica Investigativa</small></div><span>Jue · 1 Oct</span></label>
+              </div>
+              <div class="sem-actions-row">
+                <button class="btn-soft-teal" id="btn-archivar-5s">🗂 Archivar seleccionadas</button>
+                <small class="subtitle">Podrás encontrarlas después en tu historial.</small>
+              </div>
+            </div>
+
+            <div class="sem-card">
+              <h4>Lo que sigue pendiente</h4>
+              <p class="subtitle" style="margin-bottom:12px;">Déjalo listo para continuar sin perder el hilo.</p>
+              <div class="sem-list">
+                <div class="sem-item"><div><strong>Entrega Base de Datos</strong><small>Base de Datos</small></div><span>12 Oct</span><span class="priority-badge high">Alta</span><button class="link-btn move-next-week">Mover a próxima semana</button></div>
+                <div class="sem-item"><div><strong>Informe de laboratorio</strong><small>Redes II</small></div><span>13 Oct</span><span class="priority-badge medium">Media</span><button class="link-btn move-next-week">Mover a próxima semana</button></div>
+                <div class="sem-item"><div><strong>Preparar exposición</strong><small>Práctica Investigativa</small></div><span>15 Oct</span><span class="priority-badge medium">Media</span><button class="link-btn move-next-week">Mover a próxima semana</button></div>
+              </div>
+            </div>
+            <p class="subtitle" style="font-size:12px;">Nada se eliminará automáticamente. Tú decides qué archivar, combinar o reprogramar.</p>
+          </div>
+
+          <div class="semana-col">
+            <div class="sem-card cream">
+              <h4>Encontramos tareas parecidas</h4>
+              <p class="subtitle" style="margin-bottom:10px;">Estas actividades podrían estar duplicadas.</p>
+              <p><strong>Preparar parcial Redes</strong></p>
+              <p style="margin-bottom:12px;"><strong>Estudiar para parcial de Redes</strong></p>
+              <div class="dup-btns" id="dup-actions-box">
+                <button class="btn-white">Mantener ambas</button>
+                <button class="btn-soft-teal">Combinar</button>
+                <button class="btn-white orange-text">Eliminar duplicada</button>
+              </div>
+            </div>
+
+            <div class="sem-card">
+              <h4>2 tareas necesitan una fecha</h4>
+              <p class="subtitle" style="margin-bottom:12px;">Así evitas que queden olvidadas.</p>
+              <div class="no-date-grid">
+                <div><strong>Leer capítulo de redes</strong><small>Redes II</small></div>
+                <div><strong>Revisar apuntes</strong><small>General</small></div>
+              </div>
+              <button class="btn-soft-teal" id="btn-asignar-fechas-5s" style="margin-top:12px;">📅 Asignar fecha</button>
+            </div>
+
+            <div class="sem-card teal-box">
+              <h4>✦ Todo listo para empezar</h4>
+              <ul class="ready-list">
+                <li>5 tareas activas</li>
+                <li>2 entregas importantes</li>
+                <li>1 parcial</li>
+              </ul>
+              <p class="teal" style="font-weight:600; margin:10px 0;">Tu semana quedó organizada.</p>
+              <div class="dup-btns">
+                <button class="btn-white" id="btn-despues-5s">Hacerlo después</button>
+                <button class="btn-primary-inline" id="btn-finalizar-5s">Finalizar revisión</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+<!-- =====================================================================
+       03. MODAL / DRAWER LATERAL: NUEVA TAREA (Con Calendario y Hora nativos)
+  ====================================================================== -->
+  <div class="modal-overlay" id="drawer-nueva-tarea">
+    <div class="drawer-panel">
+      <div class="modal-head">
+        <div>
+          <h3>Nueva tarea</h3>
+          <p class="subtitle">Organiza lo necesario para avanzar sin complicarte.</p>
+        </div>
+        <button class="close-x" data-close="drawer-nueva-tarea">✕</button>
+      </div>
+
+      <form id="form-nueva-tarea">
+        <label class="field-label">¿Qué tienes que hacer?</label>
+        <input type="text" id="nt-titulo" class="field-input focus-border" placeholder="Ej. Preparar parcial de Redes" required>
+
+        <label class="field-label">Materia</label>
+        <select id="nt-materia" class="field-input" required>
+          <option value="Práctica Investigativa">Práctica Investigativa</option>
+          <option value="Redes II">Redes II</option>
+          <option value="Teoría de Señales">Teoría de Señales</option>
+          <option value="Base de Datos 2">Base de Datos 2</option>
+          <option value="Fundamentos de Linux">Fundamentos de Linux</option>
+          <option value="Arquitectura de Software">Arquitectura de Software</option>
+          <option value="Inglés">Inglés</option>
+          <option value="Cálculo">Cálculo</option>
+        </select>
+
+        <div class="two-cols">
+          <div>
+            <label class="field-label">Fecha límite</label>
+            <input type="date" id="nt-fecha" class="field-input" required>
+          </div>
+          <div>
+            <label class="field-label">Hora</label>
+            <input type="time" id="nt-hora" class="field-input" value="18:00" required>
+          </div>
+        </div>
+
+        <label class="field-label">Prioridad</label>
+        <div class="segmented-priority" id="nt-prioridad-group">
+          <button type="button" data-prio="Baja">Baja</button>
+          <button type="button" class="active" data-prio="Media">Media</button>
+          <button type="button" class="high-txt" data-prio="Alta">Alta</button>
+        </div>
+
+        <label class="field-label">¿Cuánto crees que tomará?</label>
+        <div class="time-pills" id="nt-tiempo-group">
+          <button type="button" data-min="15">15 min</button>
+          <button type="button" data-min="30">30 min</button>
+          <button type="button" class="active" data-min="45">45 min</button>
+          <button type="button" data-min="60">1 h</button>
+          <button type="button" data-min="90">1 h 30 min</button>
+        </div>
+
+        <hr class="divider">
+
+        <div class="steps-section">
+          <h4>Dividir en pasos</h4>
+          <p class="subtitle">Si es una tarea grande, conviértela en pasos pequeños y fáciles de empezar.</p>
+          <div class="toggle-row">
+            <span>Agregar pasos</span>
+            <input type="checkbox" id="nt-toggle-pasos" checked>
+          </div>
+
+          <div id="nt-steps-container">
+            <div id="nt-steps-list" class="steps-list">
+              <div class="step-row">
+                <span>::</span>
+                <input type="checkbox" class="step-check">
+                <input type="text" class="step-title-input" value="Revisar apuntes del tema">
+                <input type="number" class="step-min-input" value="20" min="5" max="180"><span>min</span>
+                <button type="button" class="del-step" title="Eliminar paso">🗑</button>
+              </div>
+              <div class="step-row">
+                <span>::</span>
+                <input type="checkbox" class="step-check">
+                <input type="text" class="step-title-input" value="Resolver ejercicios de práctica">
+                <input type="number" class="step-min-input" value="30" min="5" max="180"><span>min</span>
+                <button type="button" class="del-step" title="Eliminar paso">🗑</button>
+              </div>
+              <div class="step-row">
+                <span>::</span>
+                <input type="checkbox" class="step-check">
+                <input type="text" class="step-title-input" value="Repasar errores">
+                <input type="number" class="step-min-input" value="15" min="5" max="180"><span>min</span>
+                <button type="button" class="del-step" title="Eliminar paso">🗑</button>
+              </div>
+            </div>
+            <button type="button" class="link-btn" id="btn-add-step">+ Agregar otro paso</button>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <label class="field-label">Recordatorio</label>
+        <select id="nt-recordatorio" class="field-input">
+          <option value="60">🔔 1 hora antes</option>
+          <option value="1440">🔔 1 día antes</option>
+          <option value="30">🔔 30 minutos antes</option>
+        </select>
+
+        <div class="drawer-footer">
+          <span class="subtitle">Se añadirá a Pendiente</span>
+          <div class="footer-btns">
+            <button type="button" class="btn-white" data-close="drawer-nueva-tarea">Cancelar</button>
+            <button type="submit" class="btn-primary-inline">Crear tarea</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       MODAL DE DETALLE DE TAREA Y CONTROL DE ENFOQUE (Al dar clic en tarjeta)
+  ====================================================================== -->
+  <div class="modal-overlay center" id="modal-detalle-tarea">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <span class="focus-pill" id="det-estado-badge" style="display:inline-block; margin-bottom:6px;">Pendiente</span>
+          <h3 id="det-titulo">Título de la tarea</h3>
+          <p class="subtitle" id="det-materia">Materia</p>
+        </div>
+        <button class="close-x" data-close="modal-detalle-tarea">✕</button>
+      </div>
+
+      <div class="det-meta-grid">
+        <div class="det-meta-box">
+          <small class="subtitle">Fecha y hora límite</small>
+          <strong id="det-fecha">Hoy · 6:00 PM</strong>
+        </div>
+        <div class="det-meta-box">
+          <small class="subtitle">Tiempo estimado</small>
+          <strong id="det-tiempo">45 min</strong>
+        </div>
+        <div class="det-meta-box">
+          <small class="subtitle">Prioridad</small>
+          <span class="priority-badge medium" id="det-prioridad">Media</span>
+        </div>
+      </div>
+
+      <!-- Control de Enfoque (WIP) -->
+      <div class="focus-action-banner" id="det-focus-box">
+        <div>
+          <strong id="det-focus-title">¿Vas a trabajar en esta tarea ahora?</strong>
+          <p class="subtitle" id="det-focus-desc">Al enfocarla pasará a "En curso" como tu única actividad principal activa.</p>
+        </div>
+        <button type="button" class="btn-primary-inline" id="btn-toggle-focus">🎯 Enfocar esta tarea</button>
+      </div>
+
+      <!-- Control de Avance y Microtareas -->
+      <div class="det-progress-section">
+        <div class="progress-labels">
+          <label class="field-label" style="margin:0;">Avance de la tarea</label>
+          <strong class="teal" id="det-avance-label">0%</strong>
+        </div>
+        <input type="range" id="det-avance-slider" min="0" max="100" step="5" value="0" style="width:100%; accent-color: var(--teal-dark); margin: 8px 0;">
+        
+        <div id="det-pasos-container" style="margin-top: 12px;">
+          <label class="field-label">Pasos / Microtareas</label>
+          <div id="det-pasos-list" class="steps-list"></div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Cambio de columna en Kanban -->
+      <label class="field-label">Mover de columna</label>
+      <div class="chips-group" id="det-estado-chips">
+        <button type="button" class="chip" data-estado="Pendiente">Pendiente</button>
+        <button type="button" class="chip" data-estado="En curso">En curso (Enfoque)</button>
+        <button type="button" class="chip" data-estado="Revisar">Revisar</button>
+        <button type="button" class="chip" data-estado="Hecho">✓ Hecho (Revisión PDCA)</button>
+      </div>
+
+      <div class="modal-footer-right" style="justify-content: space-between; margin-top: 22px;">
+        <button type="button" class="btn-white orange-text" id="btn-eliminar-tarea">🗑 Eliminar tarea</button>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn-white" data-close="modal-detalle-tarea">Cerrar</button>
+          <button type="button" class="btn-primary-inline" id="btn-guardar-detalle">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       07. MODAL: REVISIÓN DE TAREA PDCA (comotefue en tu tarea.png)
+  ====================================================================== -->
+  <div class="modal-overlay center" id="modal-revision-pdca">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h3>¿Cómo te fue con esta tarea?</h3>
+          <p class="subtitle">Una revisión rápida puede ayudarte a planear mejor la próxima vez.</p>
+        </div>
+        <button class="close-x" data-close="modal-revision-pdca">✕</button>
+      </div>
+
+      <div class="pdca-task-summary">
+        <div>
+          <span class="teal-badge">✓ Tarea completada</span>
+          <h4 id="pdca-task-title">Preparar parcial de Redes</h4>
+          <small class="subtitle" id="pdca-task-subj">Redes II</small>
+        </div>
+        <div class="pdca-times">
+          <p>🕒 Planificado: 1 h 30 min</p>
+          <p><strong>Real: 2 h 05 min</strong> <span class="priority-badge high">+35 min</span></p>
+        </div>
+      </div>
+
+      <label class="field-label">¿Qué habías planeado?</label>
+      <div class="planned-box">Estudiar durante 1 h 30 min y completar 3 pasos.</div>
+
+      <label class="field-label">¿Qué ocurrió?</label>
+      <div class="chips-group" id="pdca-ocurrio-chips">
+        <button type="button" class="chip active">Me tomó más tiempo</button>
+        <button type="button" class="chip">Tuve interrupciones</button>
+        <button type="button" class="chip">Empecé tarde</button>
+        <button type="button" class="chip">La tarea era más difícil de lo esperado</button>
+        <button type="button" class="chip">Todo salió como esperaba</button>
+      </div>
+
+      <label class="field-label">¿Quieres añadir algo? <small class="subtitle">Opcional</small></label>
+      <input type="text" id="pdca-comentario" class="field-input" placeholder="Ej. Necesité repasar un tema antes de continuar.">
+
+      <label class="field-label">¿Qué ajustarás la próxima vez?</label>
+      <div class="chips-group" id="pdca-ajuste-chips">
+        <button type="button" class="chip active">Reservar más tiempo</button>
+        <button type="button" class="chip">Empezar antes</button>
+        <button type="button" class="chip">Dividir mejor la tarea</button>
+        <button type="button" class="chip">Reducir distracciones</button>
+        <button type="button" class="chip">No cambiar nada</button>
+      </div>
+
+      <div class="suggestion-box-teal">
+        <strong>→ Sugerencia para la próxima</strong>
+        <p>Esta tarea necesitó 35 min más de lo previsto. Podrías estimar alrededor de 2 horas para una actividad similar.</p>
+        <button type="button" class="link-btn">Usar esta estimación</button>
+      </div>
+
+      <div class="modal-footer-right">
+        <button type="button" class="btn-white" data-close="modal-revision-pdca">Omitir</button>
+        <button type="button" class="btn-primary-inline" id="btn-guardar-pdca">Guardar revisión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       08. MODAL: ANÁLISIS DE CAUSA A3 / 5 PORQUÉS (pareceqestoseestarepitiendoo.png)
+  ====================================================================== -->
+  <div class="modal-overlay center" id="modal-causa-a3">
+    <div class="modal-box">
+      <div class="modal-head">
+        <div>
+          <h3>Parece que esto se está repitiendo</h3>
+          <p class="subtitle">Podemos revisar rápidamente qué está pasando para ayudarte a evitarlo la próxima vez.</p>
+        </div>
+        <button class="close-x" data-close="modal-causa-a3">✕</button>
+      </div>
+
+      <div class="a3-alert-banner">
+        <strong>↗ 3 tareas de Redes II se atrasaron durante las últimas 2 semanas.</strong>
+        <p class="subtitle">En promedio empezaste 1 día antes de la fecha límite.</p>
+      </div>
+
+      <label class="field-label">¿Qué crees que está causando esto?</label>
+      <div class="chips-group">
+        <button type="button" class="chip active">Estoy empezando demasiado tarde</button>
+        <button type="button" class="chip">Estoy calculando poco tiempo</button>
+        <button type="button" class="chip">Tengo demasiadas tareas juntas</button>
+        <button type="button" class="chip">Me cuesta empezar</button>
+        <button type="button" class="chip">Me distraigo</button>
+        <button type="button" class="chip">No entiendo bien el tema</button>
+        <button type="button" class="chip">Otra razón</button>
+      </div>
+
+      <label class="field-label">¿Por qué estás empezando tarde?</label>
+      <div class="chips-group">
+        <button type="button" class="chip">Prioricé otras tareas</button>
+        <button type="button" class="chip">Pensé que tomaría menos tiempo</button>
+        <button type="button" class="chip active">No sabía por dónde empezar</button>
+        <button type="button" class="chip">Esperé hasta sentir presión</button>
+        <button type="button" class="chip">Otra razón</button>
+      </div>
+
+      <label class="field-label">¿Qué te dificulta empezar?</label>
+      <div class="chips-group">
+        <button type="button" class="chip active">La tarea parece demasiado grande.</button>
+        <button type="button" class="link-btn">Profundizar un poco más →</button>
+      </div>
+
+      <div class="suggestion-box-teal">
+        <strong>ⓘ Lo que parece estar ocurriendo</strong>
+        <p>Estás empezando tarde porque las tareas grandes no tienen un primer paso claro.</p>
+        <small class="subtitle">Puedes cambiar esta conclusión si no refleja bien lo que te pasa.</small>
+      </div>
+
+      <label class="field-label">¿Qué quieres probar la próxima vez?</label>
+      <div class="chips-group">
+        <button type="button" class="chip active">Dividir la tarea en pasos</button>
+        <button type="button" class="chip">Empezar con más anticipación</button>
+        <button type="button" class="chip">Reservar más tiempo</button>
+        <button type="button" class="chip">Crear un recordatorio antes</button>
+        <button type="button" class="chip">Pedir ayuda antes</button>
+      </div>
+
+      <div class="a3-alert-banner">
+        <strong>✦ Duck Flow puede ayudarte</strong>
+        <p class="subtitle">La próxima vez podemos proponerte dividir automáticamente una tarea grande en pasos pequeños.</p>
+        <button type="button" class="link-btn">Activar sugerencia</button>
+      </div>
+      <small class="subtitle">Objetivo: empezar las tareas grandes con un primer paso claro.</small>
+
+      <div class="modal-footer-right">
+        <button type="button" class="btn-white" data-close="modal-causa-a3">Ahora no</button>
+        <button type="button" class="btn-primary-inline" id="btn-guardar-a3">Guardar ajuste</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts Modulares por Interfaz -->
+  <script src="js/supabase.js"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/inicio_page.js"></script>
+  <script src="js/tareas_page.js"></script>
+  <script src="js/calendario_page.js"></script>
+  <script src="js/rutinas_page.js"></script>
+  <script src="js/progreso_page.js"></script>
+  <script src="js/semana_page.js"></script>
+</body>
+</html>
