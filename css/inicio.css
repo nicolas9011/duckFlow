@@ -3,3 +3,15 @@
 .inicio-card h4 { font-size: 16px; font-weight: 600; }
 .inicio-card p { font-size: 14px; color: #47504e; line-height: 1.5; }
 .inicio-muted { color: var(--text-muted); font-size: 13px; }
+/* Ajusta el tamaño de la caja contenedora del logo */
+.brand-logo {
+  width: 48px;   /* Cambia este valor según qué tan pequeño lo quieras (ej: 40px o 48px) */
+  height: 48px;  /* Debe medir lo mismo que el ancho para que mantenga la proporción */
+}
+
+/* Asegúrate de que la imagen interna se adapte a ese nuevo tamaño */
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* O 'cover' dependiendo de cómo prefieras que encaje */
+}

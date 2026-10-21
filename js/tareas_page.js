@@ -7,6 +7,49 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedMin = 45;
   let tareaActualDetalle = null;
 
+  // --- 1. MOSTRAR LA FECHA ACTUAL AUTOMÁTICAMENTE ---
+  const elementoFecha = document.getElementById('header-date');
+  if (elementoFecha) {
+    const hoy = new Date();
+    const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+    let fechaFormateada = hoy.toLocaleDateString('es-ES', opciones);
+    
+    // Pone la primera letra en mayúscula (ej. "Miércoles, 7 de octubre")
+    fechaFormateada = fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+    elementoFecha.textContent = fechaFormateada;
+  }
+
+  // --- 2. CARGAR EL NOMBRE Y AVATAR DESDE LA SESIÓN DE SUPABASE ---
+  async function cargarUsuarioHeader() {
+    try {
+      const { data: { session } } = await window._supabase.auth.getSession();
+      if (!session || !session.user) return;
+
+      const { data: usuario } = await window._supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      const nombreMostrar = usuario?.nombre || session.user.user_metadata?.full_name || session.user.email || 'Usuario';
+
+      const elSaludo = document.getElementById('header-greeting');
+      const elAvatar = document.getElementById('header-avatar');
+
+      if (elSaludo) {
+        elSaludo.textContent = `Hola, ${nombreMostrar}`;
+      }
+      if (elAvatar) {
+        elAvatar.textContent = nombreMostrar.charAt(0).toUpperCase();
+      }
+    } catch (e) {
+      console.error('Error al cargar el usuario en el header:', e);
+    }
+  }
+
+  // Llamar a la función para que cargue al iniciar
+  cargarUsuarioHeader();
+
   // Inicializar fecha por defecto en el input date (hoy)
   const inputFecha = document.getElementById('nt-fecha');
   if (inputFecha) {
@@ -16,9 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 1. Cargar materias y sincronizar los selectores
   async function cargarMaterias() {
+    const { data: { session } } = await window._supabase.auth.getSession();
+    if (!session || !session.user) return;
+
     const { data } = await window._supabase
       .from('materias')
       .select('*')
+      .eq('usuario_id', session.user.id)
       .eq('es_categoria_general', false)
       .order('nombre', { ascending: true });
 
@@ -67,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { data: existente } = await window._supabase
       .from('materias')
       .select('*')
+      .eq('usuario_id', usuarioId)
       .ilike('nombre', nombreMateria.trim())
       .limit(1)
       .maybeSingle();
@@ -94,19 +142,34 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  // 2. Cargar tareas desde Supabase con sus materias y pasos
+  // 2. Cargar tareas filtradas únicamente por el usuario de la sesión activa
   async function cargarTareas() {
     await cargarMaterias();
+
+    const { data: { session } } = await window._supabase.auth.getSession();
+    
+    if (!session || !session.user) {
+      // Si no hay usuario logueado, se vacía la vista
+      tareasCache = [];
+      renderizarKanban();
+      return;
+    }
+
+    const usuarioId = session.user.id;
+
     const { data } = await window._supabase
       .from('tareas')
       .select('*, materias(nombre), pasos_tarea(*)')
+      .eq('usuario_id', usuarioId) // Filtro por usuario autenticado
       .eq('archivada', false)
       .order('id', { ascending: true });
 
     if (data) {
       tareasCache = data;
-      renderizarKanban();
+    } else {
+      tareasCache = [];
     }
+    renderizarKanban();
   }
 
   function formatearDuracion(min) {
@@ -118,10 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${min} min`;
   }
 
-  // Convierte YYYY-MM-DD y HH:MM en etiqueta amigable (ej. "Hoy · 6:00 PM" o "18 Oct · 6:00 PM")
-  function construirEtiquetaFechaHora(fechaISO, hora24) {
+  // Convierte YYYY-MM-DD y HH:MM en etiqueta amigable
+function construirEtiquetaFechaHora(fechaISO, hora24) {
     if (!fechaISO) return 'Sin fecha';
-    const [anio, mes, dia] = fechaISO.split('-').map(Number);
+    
+    // 1. Tomar solo la parte de la fecha (YYYY-MM-DD) antes de separar con guiones
+    const soloFecha = fechaISO.split('T')[0];
+    const [anio, mes, dia] = soloFecha.split('-').map(Number);
+    
     const fechaObj = new Date(anio, mes - 1, dia);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -133,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (diffDias === 0) prefijoFecha = 'Hoy';
     else if (diffDias === 1) prefijoFecha = 'Mañana';
     else if (diffDias === -1) prefijoFecha = 'Ayer';
-    else prefijoFecha = `${dia} ${meses[mes - 1]}`;
+    else prefijoFecha = `${dia} ${meses[mes - 1]}`; // <--- Arreglado en una sola línea
 
     if (!hora24) return prefijoFecha;
     const [hh, mm] = hora24.split(':').map(Number);
@@ -153,19 +220,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     Object.values(cols).forEach(c => { if (c) c.innerHTML = ''; });
 
-    const subjFilter = document.getElementById('subject-filter').value.trim().toLowerCase();
-    const query = document.getElementById('task-search').value.toLowerCase().trim();
+    const filterElem = document.getElementById('subject-filter');
+    const subjFilter = filterElem ? filterElem.value.trim().toLowerCase() : 'todas';
+    
+    const searchElem = document.getElementById('task-search');
+    const query = searchElem ? searchElem.value.toLowerCase().trim() : '';
 
     const filtradas = tareasCache.filter(t => {
       const materiaNombre = (t.materias?.nombre || 'General').trim().toLowerCase();
       const cumpleMateria = subjFilter === 'todas' || materiaNombre === subjFilter;
       const cumpleBusqueda = t.titulo.toLowerCase().includes(query) || materiaNombre.includes(query);
-      const etiqueta = (t.etiqueta_fecha_ui || '').toLowerCase();
+      
+      // Calcular la etiqueta en tiempo real para que el filtro coincida exactamente
+      const etiquetaCalculada = construirEtiquetaFechaHora(t.fecha_limite, t.hora_limite_ui).toLowerCase();
 
       const cumpleTiempo = activeTimeFilter === 'todas' ||
-        (activeTimeFilter === 'hoy' && etiqueta.includes('hoy')) ||
-        (activeTimeFilter === 'semana' && !etiqueta.includes('ayer')) ||
-        (activeTimeFilter === 'proximas' && (etiqueta.includes('mañana') || etiqueta.includes('viernes') || etiqueta.includes('oct')));
+        (activeTimeFilter === 'hoy' && etiquetaCalculada.includes('hoy')) ||
+        (activeTimeFilter === 'semana' && !etiquetaCalculada.includes('ayer')) ||
+        (activeTimeFilter === 'proximas' && (etiquetaCalculada.includes('mañana') || etiquetaCalculada.includes('viernes') || etiquetaCalculada.includes('oct')));
 
       return cumpleMateria && cumpleBusqueda && cumpleTiempo;
     });
@@ -179,13 +251,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('article');
       card.dataset.id = t.id;
 
+      // Calcular la fecha y hora en tiempo real según el día actual
+      const etiquetaTiempoReal = construirEtiquetaFechaHora(t.fecha_limite, t.hora_limite_ui);
+
       if (t.estado === 'En curso' && t.en_enfoque) {
         card.className = 'task-card active-focus-card';
         card.innerHTML = `
           <span class="focus-pill">En enfoque</span>
           <h5>${t.titulo}</h5>
           <p class="task-subject">${materia}</p>
-          <div class="task-meta"><span>${t.etiqueta_fecha_ui || 'Hoy'}</span><span>${formatearDuracion(t.tiempo_estimado_min)}</span></div>
+          <div class="task-meta"><span>${etiquetaTiempoReal}</span><span>${formatearDuracion(t.tiempo_estimado_min)}</span></div>
           <span class="priority-badge ${prioClass}">${t.prioridad}</span>
           <div class="progress-block">
             <div class="progress-labels"><span>Avance</span><strong class="teal">${t.avance_porcentaje}%</strong></div>
@@ -199,12 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
           ${t.estado === 'Hecho' ? '<span class="done-pill">✓ Hecho</span>' : ''}
           <h5>${t.titulo}</h5>
           <p class="task-subject">${materia}</p>
-          <div class="task-meta"><span>${t.etiqueta_fecha_ui || 'Esta semana'}</span><span>${formatearDuracion(t.tiempo_estimado_min)}</span></div>
+          <div class="task-meta"><span>${etiquetaTiempoReal}</span><span>${formatearDuracion(t.tiempo_estimado_min)}</span></div>
           <span class="priority-badge ${prioClass}">${t.prioridad}</span>
         `;
       }
 
-      // Al hacer clic en cualquier tarjeta, abrir el modal de detalles y control de enfoque
       card.addEventListener('click', (e) => {
         if (e.target.classList.contains('btn-continue')) {
           e.stopPropagation();
@@ -217,18 +291,21 @@ document.addEventListener('DOMContentLoaded', () => {
       cols[t.estado]?.appendChild(card);
     });
 
-    document.getElementById('count-pendiente').textContent = counts['Pendiente'];
-    document.getElementById('count-encurso').textContent = counts['En curso'];
-    document.getElementById('count-revisar').textContent = counts['Revisar'];
-    document.getElementById('count-hecho').textContent = counts['Hecho'];
+    if (document.getElementById('count-pendiente')) document.getElementById('count-pendiente').textContent = counts['Pendiente'];
+    if (document.getElementById('count-encurso')) document.getElementById('count-encurso').textContent = counts['En curso'];
+    if (document.getElementById('count-revisar')) document.getElementById('count-revisar').textContent = counts['Revisar'];
+    if (document.getElementById('count-hecho')) document.getElementById('count-hecho').textContent = counts['Hecho'];
 
     const total = filtradas.length;
     const enCurso = counts['En curso'];
     const proximas = counts['Pendiente'];
-    document.getElementById('kanban-summary-text').textContent = `${total} tareas · ${enCurso} en curso · ${proximas} pendientes`;
+    const summaryElem = document.getElementById('kanban-summary-text');
+    if (summaryElem) {
+      summaryElem.textContent = `${total} tareas · ${enCurso} en curso · ${proximas} pendientes`;
+    }
   }
 
-  // 4. Abrir Modal de Detalles de Tarea y Controlar el Enfoque (WIP)
+  // 4. Abrir Modal de Detalles de Tarea y Controlar el Enfoque
   function abrirModalDetalleTarea(tarea) {
     tareaActualDetalle = tarea;
     const materia = tarea.materias?.nombre || 'General';
@@ -244,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
     prioEl.textContent = tarea.prioridad;
     prioEl.className = `priority-badge ${prioClass}`;
 
-    // Configurar banner de enfoque
     const focusBox = document.getElementById('det-focus-box');
     const btnFocus = document.getElementById('btn-toggle-focus');
     if (tarea.en_enfoque && tarea.estado === 'En curso') {
@@ -259,13 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btnFocus.textContent = '🎯 Enfocar esta tarea';
     }
 
-    // Configurar slider de avance
     const slider = document.getElementById('det-avance-slider');
     const labelAvance = document.getElementById('det-avance-label');
     slider.value = tarea.avance_porcentaje || 0;
     labelAvance.textContent = `${slider.value}%`;
 
-    // Mostrar pasos de la tarea si tiene
     const pasosList = document.getElementById('det-pasos-list');
     pasosList.innerHTML = '';
     const pasos = (tarea.pasos_tarea || []).sort((a, b) => a.orden - b.orden);
@@ -297,7 +371,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Marcar chip de estado actual
     document.querySelectorAll('#det-estado-chips .chip').forEach(c => {
       c.classList.toggle('active', c.dataset.estado === tarea.estado);
     });
@@ -305,31 +378,26 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-detalle-tarea').classList.add('open');
   }
 
-  // Slider de avance en tiempo real
   document.getElementById('det-avance-slider')?.addEventListener('input', (e) => {
     document.getElementById('det-avance-label').textContent = `${e.target.value}%`;
   });
 
-  // Botón para Enfocar / Quitar enfoque de la tarea seleccionada (Respeta WIP = 1)
   document.getElementById('btn-toggle-focus')?.addEventListener('click', async () => {
     if (!tareaActualDetalle) return;
 
     const estaEnfocada = tareaActualDetalle.en_enfoque && tareaActualDetalle.estado === 'En curso';
 
     if (estaEnfocada) {
-      // Quitar enfoque y devolver a Pendiente
       await window._supabase
         .from('tareas')
         .update({ en_enfoque: false, estado: 'Pendiente' })
         .eq('id', tareaActualDetalle.id);
     } else {
-      // 1. Quitar enfoque a cualquier otra tarea que estuviera en curso
       await window._supabase
         .from('tareas')
         .update({ en_enfoque: false, estado: 'Pendiente' })
         .eq('en_enfoque', true);
 
-      // 2. Poner la tarea elegida por el usuario en enfoque y en la columna "En curso"
       const nuevoAvance = tareaActualDetalle.avance_porcentaje > 0 ? tareaActualDetalle.avance_porcentaje : 15;
       await window._supabase
         .from('tareas')
@@ -346,7 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await cargarTareas();
   });
 
-  // Guardar cambios de estado o porcentaje desde el modal de detalle
   document.getElementById('btn-guardar-detalle')?.addEventListener('click', async () => {
     if (!tareaActualDetalle) return;
     const chipActivo = document.querySelector('#det-estado-chips .chip.active');
@@ -377,7 +444,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Eliminar tarea desde el modal de detalle
   document.getElementById('btn-eliminar-tarea')?.addEventListener('click', async () => {
     if (!tareaActualDetalle) return;
     if (confirm(`¿Eliminar la tarea "${tareaActualDetalle.titulo}"?`)) {
@@ -403,29 +469,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('subject-filter').addEventListener('change', renderizarKanban);
-  document.getElementById('task-search').addEventListener('input', renderizarKanban);
+  document.getElementById('subject-filter')?.addEventListener('change', renderizarKanban);
+  document.getElementById('task-search')?.addEventListener('input', renderizarKanban);
 
-  // 6. Drawer 03. Nueva Tarea (Pasos eliminables + Materia + Calendario)
-  document.getElementById('btn-nueva-tarea').addEventListener('click', () => {
+  // 6. Drawer 03. Nueva Tarea
+  document.getElementById('btn-nueva-tarea')?.addEventListener('click', () => {
     document.getElementById('drawer-nueva-tarea').classList.add('open');
   });
 
-  // Delegación de eventos para que CUALQUIER botón de basurita (incluso los iniciales) elimine el paso
-  document.getElementById('nt-steps-list').addEventListener('click', (e) => {
+  document.getElementById('nt-steps-list')?.addEventListener('click', (e) => {
     const btnTrash = e.target.closest('.del-step');
     if (btnTrash) {
       btnTrash.closest('.step-row').remove();
     }
   });
 
-  // Mostrar / ocultar pasos con el switch
-  document.getElementById('nt-toggle-pasos').addEventListener('change', (e) => {
+  document.getElementById('nt-toggle-pasos')?.addEventListener('change', (e) => {
     document.getElementById('nt-steps-container').style.display = e.target.checked ? 'block' : 'none';
   });
 
-  // Agregar nuevo paso
-  document.getElementById('btn-add-step').addEventListener('click', () => {
+  document.getElementById('btn-add-step')?.addEventListener('click', () => {
     const row = document.createElement('div');
     row.className = 'step-row';
     row.innerHTML = `
@@ -438,7 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nt-steps-list').appendChild(row);
   });
 
-  // Selección de Prioridad y Tiempo estimado
   document.querySelectorAll('#nt-prioridad-group button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('#nt-prioridad-group button').forEach(b => b.classList.remove('active'));
@@ -455,8 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Guardar Nueva Tarea con su Materia real y sus Pasos en Supabase
-  document.getElementById('form-nueva-tarea').addEventListener('submit', async (e) => {
+  document.getElementById('form-nueva-tarea')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const titulo = document.getElementById('nt-titulo').value.trim();
     const nombreMateria = document.getElementById('nt-materia').value;
@@ -464,19 +525,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const hora24 = document.getElementById('nt-hora').value;
     const dividirPasos = document.getElementById('nt-toggle-pasos').checked;
 
-    const { data: u } = await window._supabase.from('usuarios').select('id').limit(1).single();
-    if (!u) return;
+    const { data: { session } } = await window._supabase.auth.getSession();
+    if (!session || !session.user) return;
 
-    // 1. Obtener o crear el ID real de la materia seleccionada
-    const materiaId = await obtenerOCrearMateriaId(nombreMateria, u.id);
+    const usuarioId = session.user.id;
+
+    const materiaId = await obtenerOCrearMateriaId(nombreMateria, usuarioId);
     const etiquetaUI = construirEtiquetaFechaHora(fechaISO, hora24);
     const fechaTimestamp = fechaISO && hora24 ? `${fechaISO}T${hora24}:00-05:00` : null;
 
-    // 2. Insertar la tarea vinculada a su materia_id
     const { data: nuevaTarea, error } = await window._supabase
       .from('tareas')
       .insert([{
-        usuario_id: u.id,
+        usuario_id: usuarioId,
         materia_id: materiaId,
         titulo,
         fecha_limite: fechaTimestamp,
@@ -490,7 +551,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .select()
       .single();
 
-    // 3. Si tiene pasos activos, guardarlos en pasos_tarea
     if (!error && nuevaTarea && dividirPasos) {
       const filasPasos = document.querySelectorAll('#nt-steps-list .step-row');
       const pasosInsertar = [];
@@ -518,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await cargarTareas();
   });
 
-  document.getElementById('btn-guardar-pdca').addEventListener('click', () => {
+  document.getElementById('btn-guardar-pdca')?.addEventListener('click', () => {
     document.getElementById('modal-revision-pdca').classList.remove('open');
     alert('Revisión PDCA registrada correctamente en Supabase.');
   });

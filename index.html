@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Duck Flow - Tu ritmo académico</title>
+  <title>Duck Flow</title>
+  <link rel="icon" type="image/png" href="img/icon.png.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Estilos Modulares por Interfaz -->
   <link rel="stylesheet" href="css/base.css">
@@ -25,7 +26,9 @@
     <aside class="sidebar">
       <div class="sidebar-top">
         <div class="brand">
-          <div class="brand-logo">D</div>
+          <div class="brand-logo">
+            <img src="img/icon.png.png" alt="Logo Duck Flow">
+          </div>
           <div class="brand-text">
             <h1>Duck Flow</h1>
             <p>Tu ritmo académico</p>
@@ -75,8 +78,9 @@
     <main class="main-content">
       <header class="top-header">
         <div class="greeting">
-          <h2 id="header-greeting">Hola, Juan</h2>
-          <p>Miércoles, 7 de octubre</p>
+          <h2 id="header-greeting">Hola, </h2>
+          <!-- Le agregamos el id="header-date" -->
+          <p id="header-date">Cargando fecha...</p>
         </div>
         <div class="header-actions">
           <button class="icon-btn" id="btn-open-semana" title="Revisión semanal (Cierra tu semana)">
@@ -190,80 +194,50 @@
       </section>
 
       <!-- =================================================================
-           04. INTERFAZ: CALENDARIO (calendario.png)
-      ================================================================== -->
-      <section id="view-calendario" class="view-section">
-        <div class="section-header">
-          <div>
-            <h3>Calendario</h3>
-            <p class="subtitle">Visualiza tus entregas, parciales y actividades académicas.</p>
-          </div>
-          <button class="btn-primary-inline" id="btn-nueva-actividad-cal">+ Nueva actividad</button>
+     04. INTERFAZ: CALENDARIO
+    ================================================================== -->
+    <section id="view-calendario" class="view-section">
+      <div class="section-header">
+        <div>
+          <h3>Calendario</h3>
+          <p class="subtitle">Visualiza tus entregas, parciales y actividades académicas.</p>
         </div>
+        <button class="btn-primary-inline" id="btn-nueva-actividad-cal">+ Nueva actividad</button>
+      </div>
 
-        <div class="filter-tabs" style="margin-bottom: 14px;">
-          <button class="filter-tab">Hoy</button>
-          <button class="filter-tab">Esta semana</button>
-          <button class="filter-tab active">Mes</button>
+      <div class="filter-tabs" id="cal-time-tabs" style="margin-bottom: 14px;">
+        <button class="filter-tab" data-periodo="hoy">Hoy</button>
+        <button class="filter-tab" data-periodo="semana">Esta semana</button>
+        <button class="filter-tab active" data-periodo="mes">Mes</button>
+      </div>
+
+      <div class="cal-controls-bar">
+        <div class="cal-month-nav">
+          <button class="cal-nav-btn" id="cal-prev-month" aria-label="Mes anterior">&lt;</button>
+          <h4 id="cal-month-title">Octubre 2026</h4>
+          <button class="cal-nav-btn" id="cal-next-month" aria-label="Mes siguiente">&gt;</button>
+          <button class="cal-today-btn" id="cal-today-btn">Hoy</button>
         </div>
-
-        <div class="cal-controls-bar">
-          <div class="cal-month-nav">
-            <button class="cal-nav-btn">&lt;</button>
-            <h4>Octubre 2026</h4>
-            <button class="cal-nav-btn">&gt;</button>
-            <button class="cal-today-btn">Hoy</button>
-          </div>
           <div class="filter-inputs">
-            <div class="select-wrapper">
-              <select id="cal-subject-filter">
-                <option value="todas">Todas las materias</option>
-                <option value="Teoría de Señales">Teoría de Señales</option>
-                <option value="Redes II">Redes II</option>
-                <option value="Base de Datos 2">Base de Datos 2</option>
-                <option value="Inglés">Inglés</option>
-              </select>
-            </div>
-            <div class="select-wrapper">
-              <select id="cal-type-filter">
-                <option value="todas">Todas las actividades</option>
-                <option value="Parcial">Parciales</option>
-                <option value="Taller">Talleres</option>
-                <option value="Entrega">Entregas</option>
-              </select>
-            </div>
+            <p class="cal-subject-msg">Mostrando todas las materias</p>
           </div>
-        </div>
+      </div>
 
-        <p class="cal-sub-count">12 actividades este mes · 3 próximas · 1 urgente</p>
+      <p class="cal-sub-count" id="cal-summary-text">Cargando actividades...</p>
 
-        <div class="calendario-layout">
-          <div class="cal-grid-box" id="calendar-grid-container"></div>
-          <aside class="cal-upcoming-panel">
-            <h4>Próximamente</h4>
-            <p class="subtitle" style="margin-bottom:14px;">Lo más cercano de tu semana</p>
-            <div class="upcoming-card urgent">
-              <div class="up-top"><span class="up-day orange">Hoy</span><span>6:00 PM</span></div>
-              <h5>Taller de Señales</h5>
-              <p class="up-rem">🔔 Recordatorio 1 h antes</p>
-            </div>
-            <div class="upcoming-card">
-              <div class="up-top"><span class="up-day teal">Mañana</span><span>10:00 AM</span></div>
-              <h5>Quiz Inglés</h5>
-              <p class="up-rem">🔔 Recordatorio 1 h antes</p>
-            </div>
-            <div class="upcoming-card urgent">
-              <div class="up-top"><span class="up-day orange">Viernes</span><span>8:00 AM</span></div>
-              <h5>Parcial Redes II</h5>
-            </div>
-            <div class="upcoming-card">
-              <div class="up-top"><span class="up-day teal">12 Oct</span><span>11:59 PM</span></div>
-              <h5>Entrega Base de Datos</h5>
-            </div>
-          </aside>
-        </div>
-      </section>
+      <div class="calendario-layout">
+        <div class="cal-grid-box" id="calendar-grid-container"></div>
 
+        <!-- El contenido de este panel lo genera calendario.js -->
+        <aside class="cal-upcoming-panel">
+          <h4>Próximamente</h4>
+          <p class="subtitle" style="margin-bottom:14px;">Lo más cercano de tu semana</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Al final del body, después de crear window._supabase -->
+    <script src="calendario.js"></script>
       <!-- =================================================================
            05. INTERFAZ: RUTINAS (rutinas.png)
       ================================================================== -->

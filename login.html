@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Duck Flow</title>
+  <link rel="icon" type="image/png" href="img/icon.png.png">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/auth.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +15,9 @@
   <div class="auth-container">
     <div class="auth-card">
       <div class="brand-header">
-        <div class="brand-logo">D</div>
+        <div class="brand-logo">
+          <img src="img/icon.png.png" alt="Logo Duck Flow">
+        </div>
         <h2>Duck Flow</h2>
         <p>Tu ritmo académico</p>
       </div>
@@ -24,11 +27,11 @@
         <div id="register-fields" style="display: none;">
           <div class="input-group">
             <label for="nombre">Nombre</label>
-            <input type="text" id="nombre" placeholder="Ej: Juan">
+            <input type="text" id="nombre" placeholder="Nombre">
           </div>
           <div class="input-group">
             <label for="apellido">Apellido</label>
-            <input type="text" id="apellido" placeholder="Ej: Parra">
+            <input type="text" id="apellido" placeholder="Apellido">
           </div>
         </div>
 
@@ -44,7 +47,13 @@
 
         <div id="auth-error" class="error-msg"></div>
 
+        <!-- Enlace de recuperar contraseña (idealmente con su propio ID o clase) -->
+        <div id="forgot-password-container" class="input-group-link">
+          <button type="button" id="btn-forgot-password" class="btn-link">¿Olvidaste tu contraseña?</button>
+        </div>
+
         <button type="submit" id="btn-submit" class="btn-primary">Iniciar sesión</button>
+
       </form>
 
       <div class="auth-toggle">
